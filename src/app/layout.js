@@ -1,6 +1,7 @@
+
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
+import GooeyNav from "../../components/GooeyNav";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -22,7 +23,11 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <div className="h-screen w-screen">
+          <GooeyNav />
+          {children}
+          </div>
+        
       </body>
     </html>
   );

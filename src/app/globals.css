@@ -1,10 +1,66 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #363432;
+  --foreground: #fffefe;
 }
 
+@font-face {
+  font-family: 'Theatre';
+  src: url("/fonts/Theaterv04_Bold.ttf") format("truetype");   
+}
+@font-face {
+  font-family: 'Monumet';
+  src: url("/fonts/MonumentExtended-Regular.ttf") format("truetype");   
+}
+@font-face {
+  font-family: 'chakra';
+  src: url("/fonts/ChakraPetch-Regular.ttf") format("truetype");   
+}
+@font-face {
+  font-family: 'ostrich';
+  src: url("/fonts/ostrich-regular.ttf") format("truetype");   
+}
+@font-face {
+  font-family: 'Montserrat';
+  src: url("/fonts/Montserrat-Regular.ttf") format("truetype");   
+}
+
+@font-face {
+  font-family: 'ZENTRY-Regular';
+  src: url("/fonts/ZENTRY-Regular.ttf") format("truetype");   
+}
+@font-face {
+  font-family: 'style1';
+  src: url("/fonts/style1.ttf") format("truetype");   
+}
+@font-face {
+  font-family: 'strig';
+  src: url("/fonts/strig.ttf") format("truetype");   
+}
+@font-face {
+  font-family: 'space';
+  src: url("/fonts/space.ttf") format("truetype");   
+}
+@font-face {
+  font-family: 'brico';
+  src: url("/fonts/Brico.ttf") format("truetype");   
+}
+
+@theme{
+  
+  --font-Monument:"Monument",sans-serif;
+  --font-Theatre:"Theatre",sans-serif;
+  --font-mont:"Montserrat",sans-serif;
+  --font-chakra:"chakra",sans-serif;
+  --font-ostrich:"ostrich",sans-serif;
+  --font-zentry:"ZENTRY-Regular",sans-serif;
+  --font-style:"style1",sans-serif;
+  --font-strig:"strig",sans-serif;
+  --font-space:"space",sans-serif;
+  --font-brico:"brico",sans-serif;
+
+}
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -14,13 +70,87 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background1: #021620;
+    --background2: #000000;
     --foreground: #ededed;
   }
 }
 
 body {
-  background: var(--background);
+
+  background: linear-gradient(to right, black 25%, var(--background1) 50%, black 70%);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  color:white;
+  overflow-x: hidden;
+  
+}
+@layer utilities{
+  .thin-border {
+    backdrop-filter: blur(2px) saturate(159%);
+    -webkit-backdrop-filter: blur(1px) saturate(159%);
+    background:linear-gradient(to bottom right , rgba(63, 62, 62, 0.249) 30% , rgba(132, 131, 131, 0.242) 50% ,rgba(75, 75, 75, 0.2) 70%);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.125);
+    box-shadow: 0 0 10px 6px rgba(0, 0, 0, 0.686);
+}
+  
+  .Third-border {
+    backdrop-filter: blur(2px) saturate(159%);
+    -webkit-backdrop-filter: blur(1px) saturate(159%);
+    background-color: hsla(180, 1%, 30%, 0.267);
+    border-radius: 12px;
+    box-shadow: 0px -3px 14px 0px hsla(0, 0%, 90%, 0.492) inset;
+    
+    
+}
+ 
+.blend{
+  background: linear-gradient(to right, black 25%, var(--background1) 50%, black 70%);
+  filter: blur(50px);
+}
+.scanner {
+  background: linear-gradient(to bottom, 
+    rgba(85, 160, 206, 0.007) 40%, 
+    rgba(29, 169, 224, 0.17) 60%, 
+    rgba(68, 155, 168, 0) 80%);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  animation: slideY 4s linear infinite;
+}
+
+.text-crazy{
+  -webkit-text-stroke-width: 1px ;
+  mix-blend-mode: difference;
+  
+}
+}
+@keyframes slideY {
+  0% {
+    transform: translateY(-100%);
+  }
+  99.9% {
+    transform: translateY(100%);
+  }
+  100% {
+    transform: translateY(-100%);
+  }
+}
+::-webkit-scrollbar {
+   width: 8px;
+   background-color: transparent;
+   border-radius: 20px;
+}
+::-webkit-scrollbar-track {
+   background-color: black;
+}
+
+::-webkit-scrollbar-thumb {
+   width: 10px;
+   background-color: rgb(41, 38, 38);
+   border-radius: 20px;
+   height: 8px;
 }
