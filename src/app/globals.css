@@ -98,9 +98,8 @@ body {
   .Third-border {
     backdrop-filter: blur(2px) saturate(159%);
     -webkit-backdrop-filter: blur(1px) saturate(159%);
-    background-color: hsla(180, 1%, 30%, 0.267);
-    border-radius: 12px;
-    box-shadow: 0px -3px 14px 0px hsla(0, 0%, 90%, 0.492) inset;
+    background-color: hsla(180, 1%, 30%, 0.116);
+    box-shadow: 0px 0px 6px 0px hsla(0, 0%, 90%, 0.383) inset;
     
     
 }

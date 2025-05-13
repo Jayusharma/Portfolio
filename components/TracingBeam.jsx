@@ -19,7 +19,7 @@ export default function TracingBeamSkills() {
     {
       id: "frontend",
       title: "Frontend Skills",
-      icon: <Monitor className="h-10 w-10 text-purple-500" />,
+      icon: <Monitor className="size-10 text-purple-500 max-lg:size-7" />,
       color: "purple",
       position: "right", // Show on right side
       description: "Creating beautiful, responsive, and interactive user interfaces",
@@ -37,7 +37,7 @@ export default function TracingBeamSkills() {
     {
       id: "backend",
       title: "Backend Skills",
-      icon: <Server className="h-10 w-10 text-blue-500" />,
+      icon: <Server className="size-10 text-blue-500 max-lg:size-7" />,
       color: "blue",
       position: "left", // Show on left side
       description: "Building robust, scalable, and secure server-side applications",
@@ -55,7 +55,7 @@ export default function TracingBeamSkills() {
     {
       id: "tools",
       title: "Tools & Practices",
-      icon: <Wrench className="h-10 w-10 text-green-500" />,
+      icon: <Wrench className="size-10 text-green-500 max-lg:size-7" />,
       color: "green",
       position: "right", // Show on right side
       description: "Leveraging modern tools and methodologies for efficient development",
@@ -193,13 +193,13 @@ export default function TracingBeamSkills() {
   }
 
   return (
-    <div className="relative mx-auto min-h-[100vh] max-w-5xl px-4 py-16" ref={containerRef}>
+    <div className="relative mx-auto min-h-[100vh] max-w-5xl px-4 py-10" ref={containerRef}>
       {/* Static beam background */}
-      <div className="absolute left-1/2 top-10 bottom-10 -ml-px w-[1px] bg-gradient-to-b from-transparent via-slate-300 to-transparent" />
+      <div className="absolute left-1/2 top-10 bottom-10 -ml-px w-[1px] max-sm:left-1/5 bg-gradient-to-b from-transparent via-slate-300 to-transparent" />
 
       {/* Animated beam that follows scroll with glow effect - only shows when triggered */}
       <motion.div
-        className="absolute left-1/2 top-10 bottom-30 -ml-[2px] w-[4px] bg-gradient-to-b from-purple-500 via-blue-500 to-green-500"
+        className="absolute left-1/2 top-10 bottom-30 -ml-[2px] w-[4px] max-sm:left-1/5 bg-gradient-to-b from-purple-500 via-blue-500 to-green-500"
         style={{
           scaleY: scrollProgress,
           originY: 0,
@@ -218,7 +218,7 @@ export default function TracingBeamSkills() {
         return (
           <motion.div
             key={section.id}
-            className={`absolute left-1/2 -ml-6 -mt-6 flex h-12 w-12 items-center justify-center rounded-full ${
+            className={`absolute left-1/2 -ml-6 -mt-6 flex size-12 items-center justify-center rounded-full max-sm:left-1/5 max-lg:size-8 max-lg:-ml-4 max-lg:-mt-4 ${
               isActive ? colors.bg : "bg-slate-200"
             }`}
             style={{ top: nodePositions[index] }}
@@ -285,15 +285,14 @@ export default function TracingBeamSkills() {
 
 function SkillBox({ section, position, nodePosition }) {
   const colors = getColorClasses(section.color)
-  
   // Position class based on whether it should be on left or right
   const positionClass = position === "left" 
-    ? "right-[60%] mr-8" 
-    : "left-[60%] ml-8"
+    ? "right-[60%] mr-8 max-lg:right-[50%] max-sm:left-[20%] max-sm:ml-8 " 
+    : "left-[60%] ml-8  max-lg:left-[50%] max-sm:left-[20%]"
 
   return (
     <motion.div
-      className={`absolute ${positionClass} w-full max-w-sm `}
+      className={`absolute ${positionClass} w-full max-w-sm  max-sm:max-w-xs`}
       style={{ top: nodePosition , translateY: "-70%"}} // Use the node position here instead of top-1/2 transform
       initial={{ opacity: 0, x: position === "left" ? 50 : -50 }}
       animate={{ opacity: 1, x: 0 }}
@@ -306,8 +305,8 @@ function SkillBox({ section, position, nodePosition }) {
           <div className="mb-4 flex items-center space-x-3 ">
             <div className={`rounded-xl ${colors.bg} p-2 shadow-lg ${colors.glow}`}>{section.icon}</div>
             <div>
-              <h2 className="text-xl font-mont text-white">{section.title}</h2>
-              <p className="text-sm text-white/70 font-chakra">{section.description}</p>
+              <h2 className="text-xl font-mont text-white max-lg:text-lg">{section.title}</h2>
+              <p className="text-sm text-white/70 font-chakra max-lg:text-xs">{section.description}</p>
             </div>
           </div>
 
@@ -316,14 +315,14 @@ function SkillBox({ section, position, nodePosition }) {
             {section.items.map((skill, index) => (
               <motion.div
                 key={skill.name}
-                className="group relative overflow-hidden rounded-lg border border-white/10 bg-white/5 p-3 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:bg-white/10"
+                className="group relative overflow-hidden rounded-lg border border-white/10 bg-white/5 p-3 max-lg:p-1.5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:bg-white/10"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05, duration: 0.2 }}
               >
-                <div className="flex items-center space-x-2">
-                  <div className="text-xl">{skill.icon}</div>
-                  <h3 className="text-sm font-medium text-white">{skill.name}</h3>
+                <div className="flex items-center space-x-3">
+                  <div className="text-xl max-lg:text-lg">{skill.icon}</div>
+                  <h3 className="text-sm font-medium text-white max-lg:text-xs">{skill.name}</h3>
                 </div>
 
                 {/* Background glow */}

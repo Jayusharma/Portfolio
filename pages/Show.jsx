@@ -1,306 +1,611 @@
 "use client"
-import React, { useRef, useState, useEffect } from 'react'
-import { gsap } from "gsap";
-import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
+import { useRef, useState, useEffect, useCallback, memo } from "react"
+import { gsap } from "gsap"
+import { ScrollToPlugin } from "gsap/ScrollToPlugin"
+import { motion } from "framer-motion"
+import { useInView } from "react-intersection-observer"
 
-gsap.registerPlugin(ScrollToPlugin);
+gsap.registerPlugin(ScrollToPlugin)
 
-const projects=[
+// Memoized Project Card Component
+const ProjectCard = memo(({ project, index, currentIndex, activeHover, onCardClick, onCardHover, cardRef }) => {
+  // Lazy loading implementation with react-intersection-observer
+  const { ref: inViewRef, inView } = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+    rootMargin: "200px",
+  })
+
+  // Combine refs (intersection observer ref and the card ref from parent)
+  const setRefs = useCallback(
+    (node) => {
+      // Save to the ref from parent component
+      cardRef(node, index)
+      // Save to the inView ref
+      inViewRef(node)
+    },
+    [cardRef, index, inViewRef],
+  )
+
+  // Calculate how far the card is from the current center
+  const isActive = activeHover === index
+  const [imageLoaded, setImageLoaded] = useState(false)
+
+  // Handle image load event
+  const handleImageLoad = () => {
+    setImageLoaded(true)
+  }
+
+  return (
+    <div
+      ref={setRefs}
+      onClick={() => onCardClick(index, project)}
+      onMouseEnter={() => onCardHover(index, true)}
+      onMouseLeave={() => onCardHover(index, false)}
+      className={`card-container h-full w-[25vw] flex-shrink-0 relative flex items-center justify-center overflow-hidden rounded-xl shadow-xl max-sm:w-[30vw]
+        ${index === currentIndex ? "z-10" : ""}
+        transition-all duration-500 cursor-pointer
+      `}
+      style={{
+        transformOrigin: "center center",
+        boxShadow: isActive ? "0 20px 40px rgba(0,0,0,0.4)" : "0 10px 25px rgba(0,0,0,0.2)",
+        transform: isActive ? "translateY(-12px) scale(1.03)" : "",
+        border: isActive ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(255,255,255,0.05)",
+      }}
+    >
+      <div
+        className="card-overlay absolute inset-0 opacity-40 transition-opacity duration-300"
+        style={{ opacity: isActive ? 0.3 : 0.5 }}
+      />
+
+      {/* Placeholder shown while image is loading */}
+      {!imageLoaded && (
+        <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
+          <div className="w-8 h-8 border-4 border-gray-600 border-t-white rounded-full animate-spin"></div>
+        </div>
+      )}
+
+      {/* Only load image when in viewport or nearby (lazy loading) */}
+      {inView && (
+        <img
+          src={project.image || "/placeholder.svg"}
+          alt={project.des}
+          className={`card-image w-full h-full object-cover transition-transform duration-500 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
+          onLoad={handleImageLoad}
+          loading="lazy"
+        />
+      )}
+
+      <div className="card-content absolute bottom-0 left-0 w-full p-5 z-10 max-sm:p-1">
+        <span className="category-badge text-sm max-sm:text-xs text-white opacity-90 mb-2 inline-block py-1 px-3 rounded-full">
+          {project.category}
+        </span>
+        <h2 className="text-2xl max-sm:text-lg pl-2 font-semibold text-white">{project.des}</h2>
+
+        <div
+          className={`mt-3 flex items-center transition-opacity duration-300 ${isActive ? "opacity-100" : "opacity-0"}`}
+        >
+          <span className="text-white/80 text-sm">View Project</span>
+          <svg
+            className="w-4 h-4 ml-2 text-white"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M5 12h14"></path>
+            <path d="M12 5l7 7-7 7"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  )
+})
+
+// Ensure displayName is set for React DevTools
+ProjectCard.displayName = "ProjectCard"
+
+const projects = [
   {
-    image: "data:image/jpeg;base64,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", // Using placeholder images since external URLs might not work
-    des: "Project 1"
+    image: "https://images.pexels.com/photos/443446/pexels-photo-443446.jpeg?auto=compress&cs=tinysrgb&w=600",
+    des: "Project 1",
+    category: "Web Development",
   },
   {
-    image: "/api/placeholder/400/320",
-    des: "Project 2"
+    image:
+      "https://images.pexels.com/photos/45853/grey-crowned-crane-bird-crane-animal-45853.jpeg?auto=compress&cs=tinysrgb&w=600",
+    des: "Project 2",
+    category: "UI/UX Design",
   },
   {
-    image: "/api/placeholder/400/320",
-    des: "Project 3"
+    image: "https://images.pexels.com/photos/1366957/pexels-photo-1366957.jpeg?auto=compress&cs=tinysrgb&w=600",
+    des: "Project 3",
+    category: "Mobile App",
   },
   {
-    image: "/api/placeholder/400/320",
-    des: "Project 4"
+    image: "https://images.pexels.com/photos/573299/pexels-photo-573299.jpeg?auto=compress&cs=tinysrgb&w=600",
+    des: "Project 4",
+    category: "Branding",
   },
   {
-    image: "/api/placeholder/400/320",
-    des: "Project 5"
+    image: "https://images.pexels.com/photos/372166/pexels-photo-372166.jpeg?auto=compress&cs=tinysrgb&w=600",
+    des: "Project 5",
+    category: "Photography",
   },
   {
-    image: "/api/placeholder/400/320",
-    des: "Project 6"
+    image: "https://images.pexels.com/photos/395196/pexels-photo-395196.jpeg?auto=compress&cs=tinysrgb&w=600",
+    des: "Project 6",
+    category: "Motion Design",
   },
   {
-    image: "/api/placeholder/400/320",
-    des: "Project 7"
-  },
-  {
-    image: "/api/placeholder/400/320",
-    des: "Project 8"
+    image: "https://images.pexels.com/photos/33545/sunrise-phu-quoc-island-ocean.jpg?auto=compress&cs=tinysrgb&w=600",
+    des: "Project 7",
+    category: "3D Modeling",
   },
 ]
 
-const Show = () => {
-  const slideRef = useRef(null);
-  const CardRef = useRef([]);
-  const [hoverSide, setHoverSide] = useState(0);
-  const middleIndex = Math.floor(projects.length / 2);
-  const initial = middleIndex + projects.length;
-  const [CurrentIndex, setCurrentIndex] = useState(initial);
-  const [clicked, setClicked] = useState(false);
-  const [scrollEnabled, setScrollEnabled] = useState(true);
-  const [expanded, setExpanded] = useState(false);
-  const [expandedContent, setExpandedContent] = useState(null);
-  const expandedCardRef = useRef(null);
-  const containerRef = useRef(null);
-  // Store the centered card position for accurate close animation
-  const centeredPositionRef = useRef(null);
+const PremiumGallery = () => {
+  const slideRef = useRef(null)
+  const CardRef = useRef([])
+  const [hoverSide, setHoverSide] = useState(0)
+  const middleIndex = Math.floor(projects.length / 2)
+  const initial = middleIndex + projects.length
+  const [CurrentIndex, setCurrentIndex] = useState(initial)
+  const [clicked, setClicked] = useState(false)
+  const [scrollEnabled, setScrollEnabled] = useState(true)
+  const [expanded, setExpanded] = useState(false)
+  const [expandedContent, setExpandedContent] = useState(null)
+  const expandedCardRef = useRef(null)
+  const imageCloneRef = useRef(null)
+  const containerRef = useRef(null)
+  const centeredPositionRef = useRef(null)
+  const [activeHover, setActiveHover] = useState(null)
+  const contentContainerRef = useRef(null)
 
-  const extendedProjects = [
-    ...projects,
-    ...projects,
-    ...projects
-  ];
+  const extendedProjects = [...projects, ...projects, ...projects]
 
-  // Set current index as mid item 
+  // Memoized throttle function to prevent unnecessary recreations
+  const throttle = useCallback((fn, delay) => {
+    let lastCall = 0
+    return (...args) => {
+      const now = new Date().getTime()
+      if (now - lastCall < delay) return
+      lastCall = now
+      return fn(...args)
+    }
+  }, [])
+
+  // Set current index as mid item
   useEffect(() => {
-    const t1 = gsap.timeline();
-    const container = slideRef.current;
-    if (!container) return;
+    const t1 = gsap.timeline()
+    const container = slideRef.current
+    if (!container) return
 
-    const itemWidth = container.scrollWidth / extendedProjects.length;
-    const scrollTod = itemWidth * CurrentIndex - container.clientWidth / 2 + itemWidth / 2;
+    const itemWidth = container.scrollWidth / extendedProjects.length
+    const scrollTod = itemWidth * CurrentIndex - container.clientWidth / 2 + itemWidth / 2
 
     t1.to(container, {
       scrollTo: { x: scrollTod },
       duration: 0.6,
-      ease: 'power2.inOut',
-    });
-  }, [CurrentIndex]);
-  
-  // Scrolling effect 
-  useEffect(() => {
-    const container = slideRef.current;
-    if (!container || hoverSide === 0 || expanded) return;
+      ease: "power2.inOut",
+    })
+  }, [CurrentIndex, extendedProjects.length])
 
-    let animationFrameId;
+  // Scrolling effect - memoized with dependencies
+  useEffect(() => {
+    const container = slideRef.current
+    if (!container || hoverSide === 0 || expanded) return
+
+    let animationFrameId
 
     const smoothScroll = () => {
-      container.scrollLeft += hoverSide * 10; // Small pixel shift per frame
-      animationFrameId = requestAnimationFrame(smoothScroll);
-    };
+      container.scrollLeft += hoverSide * 10
+      animationFrameId = requestAnimationFrame(smoothScroll)
+    }
 
-    smoothScroll(); // Start scrolling
+    smoothScroll()
 
-    return () => cancelAnimationFrame(animationFrameId); // Cleanup on hover exit
-  }, [hoverSide, expanded]);
+    return () => cancelAnimationFrame(animationFrameId)
+  }, [hoverSide, expanded])
 
-  // Infinite scroll loop 
+  // Infinite scroll loop - memoized with dependencies
   useEffect(() => {
-    const container = slideRef.current;
-    if (!container || expanded) return;
+    const container = slideRef.current
+    if (!container || expanded) return
 
-    const itemWidth = container.scrollWidth / extendedProjects.length;
+    const itemWidth = container.scrollWidth / extendedProjects.length
 
     const handleScroll = () => {
-      const scrollLeft = container.scrollLeft;
+      const scrollLeft = container.scrollLeft
 
-      // Temporarily remove smooth scroll for instant jump
-      container.classList.remove("scroll-smooth");
+      container.classList.remove("scroll-smooth")
 
-      // Jump from left clones to original content
       if (scrollLeft <= itemWidth * (projects.length / 2)) {
-        container.scrollLeft += itemWidth * projects.length;
+        container.scrollLeft += itemWidth * projects.length
       }
 
-      // Jump from right clones to original content
-      if (scrollLeft >= itemWidth * (projects.length + (projects.length / 2))) {
-        container.scrollLeft -= itemWidth * projects.length;
+      if (scrollLeft >= itemWidth * (projects.length + projects.length / 2)) {
+        container.scrollLeft -= itemWidth * projects.length
       }
 
-      // Restore scroll-smooth in the next frame
       requestAnimationFrame(() => {
-        container.classList.add("scroll-smooth");
-      });
-    };
-
-    container.addEventListener("scroll", handleScroll);
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, [expanded]);
-
-  // Handle card click and expansion
-  const handleCardClick = (index, project) => {
-    if (expanded) return;
-    
-    setCurrentIndex(index);
-    setClicked(true);
-    
-    // Get references
-    const card = CardRef.current[index];
-    const container = containerRef.current;
-    const slideContainer = slideRef.current;
-    
-    if (card && container && slideContainer) {
-      // Store expanded content
-      setExpandedContent(project);
-      
-      // First, scroll to center the clicked card
-      const itemWidth = slideContainer.scrollWidth / extendedProjects.length;
-      const scrollTod = itemWidth * index - slideContainer.clientWidth / 2 + itemWidth / 2;
-      
-      // Create timeline for the complete animation sequence
-      const tl = gsap.timeline({
-        onComplete: () => {
-          setExpanded(true);
-        }
-      });
-      
-      // Step 1: Center the card
-      tl.to(slideContainer, {
-        scrollTo: { x: scrollTod },
-        duration: 0.6,
-        ease: 'power2.inOut',
-        onComplete: () => {
-          // After card is centered, now we can get accurate position for expansion
-          const cardRect = card.getBoundingClientRect();
-          const containerRect = container.getBoundingClientRect();
-          
-          // Store the centered position for use during close animation
-          centeredPositionRef.current = {
-            top: cardRect.top - containerRect.top,
-            left: cardRect.left - containerRect.left,
-            width: cardRect.width,
-            height: cardRect.height
-          };
-          
-          // Step 2: Create clone for expansion only after centering is done
-          const clone = card.cloneNode(true);
-          clone.style.position = "absolute";
-          clone.style.top = `${centeredPositionRef.current.top}px`;
-          clone.style.left = `${centeredPositionRef.current.left}px`;
-          clone.style.width = `${centeredPositionRef.current.width}px`;
-          clone.style.height = `${centeredPositionRef.current.height}px`;
-          clone.style.zIndex = "50";
-          clone.style.borderRadius = "0px"; // Match original card
-          expandedCardRef.current = clone;
-          container.appendChild(clone);
-          
-          // Disable scroll during expansion
-          setScrollEnabled(false);
-          
-          // Step 3: Animate other cards to slide out with staggered delay
-          const slideTl = gsap.timeline();
-          
-          CardRef.current.forEach((otherCard, i) => {
-            if (i !== index) {
-              const direction = i < index ? -1 : 1;
-              // Calculate distance based on position from clicked card
-              const distance = Math.abs(i - index);
-              // Create staggered delay based on distance from clicked card
-              const staggerDelay = distance * 0.05;
-              
-              slideTl.to(otherCard, {
-                x: `${direction * (window.innerWidth * 0.5)}px`, // Not too far off screen
-                opacity: 0,
-                duration: 0.8, // Slower slide animation
-                ease: "power3.out", // Smoother easing
-                delay: staggerDelay
-              }, 0); // Start at the same time, but with staggered delays
-            }
-          });
-          
-          // Step 4: Only start expanding the clone after cards have started sliding
-          slideTl.to(clone, {
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            borderRadius: 0,
-            duration: 1.2,
-            ease: "power2.inOut",
-            delay: 0.3, // Start expanding after slide animation has begun
-            onComplete: () => {
-              // Add expanded content
-              const contentDiv = document.createElement('div');
-              contentDiv.className = "absolute inset-0 bg-white p-8 overflow-auto opacity-0"; // Start invisible
-              contentDiv.innerHTML = `
-                <h1 class="text-4xl font-bold mb-4">${project.des}</h1>
-                <p class="text-lg mb-4">Expanded content for ${project.des}</p>
-                <button id="close-btn" class="px-4 py-2 bg-black text-white rounded">Close</button>
-              `;
-              clone.appendChild(contentDiv);
-              
-              // Fade in content
-              gsap.to(contentDiv, {
-                opacity: 1,
-                duration: 0.5,
-                delay: 0.2
-              });
-              
-              document.getElementById('close-btn').addEventListener('click', handleClose);
-            }
-          }, 0.2); // Start slightly after the sliding animation begins
-        }
-      });
+        container.classList.add("scroll-smooth")
+      })
     }
-  };
-  
-  // Handle closing the expanded card
-  const handleClose = () => {
-    const container = containerRef.current;
-    const clone = expandedCardRef.current;
-    const storedPosition = centeredPositionRef.current;
-  
-    if (clone && storedPosition) {
-      // Set transform-origin to center for a consistent animation
-      clone.style.transformOrigin = "center center";
-  
-      // Create reverse animation timeline
+
+    // Use memoized throttle function
+    const throttledHandleScroll = throttle(handleScroll, 100)
+    container.addEventListener("scroll", throttledHandleScroll)
+
+    // Proper cleanup
+    return () => container.removeEventListener("scroll", throttledHandleScroll)
+  }, [expanded, projects.length, extendedProjects.length, throttle])
+
+  // Memoized card click handler
+  const handleCardClick = useCallback(
+    (index, project) => {
+      if (expanded) return
+
+      setCurrentIndex(index)
+      setClicked(true)
+
+      const card = CardRef.current[index]
+      const container = containerRef.current
+      const slideContainer = slideRef.current
+      const isSmallScreen = window.matchMedia("(max-width: 640px)").matches
+      const isTablet = window.matchMedia("(max-width: 1024px)").matches
+
+      if (card && container && slideContainer) {
+        setExpandedContent(project)
+
+        const itemWidth = slideContainer.scrollWidth / extendedProjects.length
+        const scrollTod = itemWidth * index - slideContainer.clientWidth / 2 + itemWidth / 2
+
+        const tl = gsap.timeline({
+          onComplete: () => {
+            setExpanded(true)
+          },
+        })
+
+        // Center the card
+        tl.to(slideContainer, {
+          scrollTo: { x: scrollTod },
+          duration: 0.6,
+          ease: "power2.inOut",
+          onComplete: () => {
+            const cardRect = card.getBoundingClientRect()
+            const containerRect = container.getBoundingClientRect()
+
+            // Find the image element in the original card
+            const originalImage = card.querySelector("img")
+            const originalImageRect = originalImage.getBoundingClientRect()
+
+            // Save positions for later use
+            centeredPositionRef.current = {
+              top: cardRect.top - containerRect.top,
+              left: cardRect.left - containerRect.left,
+              width: cardRect.width,
+              height: cardRect.height,
+              imageTop: originalImageRect.top - containerRect.top,
+              imageLeft: originalImageRect.left - containerRect.left,
+              imageWidth: originalImageRect.width,
+              imageHeight: originalImageRect.height,
+              imageSrc: originalImage.src,
+            }
+
+            // Create a clone of the card as a container (without the image)
+            const cardClone = document.createElement("div")
+            cardClone.className = "absolute z-50 overflow-hidden rounded-lg"
+            cardClone.style.top = `${centeredPositionRef.current.top}px`
+            cardClone.style.left = `${centeredPositionRef.current.left}px`
+            cardClone.style.width = `${centeredPositionRef.current.width}px`
+            cardClone.style.height = `${centeredPositionRef.current.height}px`
+            cardClone.style.backgroundColor = "#01090f"
+            expandedCardRef.current = cardClone
+
+            // Create a separate clone for just the image
+            const imageClone = document.createElement("img")
+            imageClone.src = centeredPositionRef.current.imageSrc
+            imageClone.className = "object-cover block z-51"
+            imageClone.style.top = `${centeredPositionRef.current.imageTop - centeredPositionRef.current.top}px`
+            imageClone.style.left = `${centeredPositionRef.current.imageLeft - centeredPositionRef.current.left}px`
+            imageClone.style.width = `${centeredPositionRef.current.imageWidth}px`
+            imageClone.style.height = `${centeredPositionRef.current.imageHeight}px`
+            imageCloneRef.current = imageClone
+
+            // Add the image clone to the container
+            cardClone.appendChild(imageClone)
+            container.appendChild(cardClone)
+
+            setScrollEnabled(false)
+
+            let finalImageTop, finalImageLeft, finalImageWidth, finalImageHeight
+
+            if (isSmallScreen) {
+              // Mobile layout (top image taking full width)
+              finalImageTop = 30
+              finalImageLeft = 10
+              finalImageWidth = window.innerWidth - 80 // Full width minus margin
+              finalImageHeight = finalImageWidth * 0.5 // Maintain aspect ratio
+            } else if (isTablet) {
+              // Tablet layout
+              finalImageTop = 170
+              finalImageLeft = 80
+              finalImageWidth = Math.min(window.innerWidth * 0.26, 500)
+              finalImageHeight =
+                finalImageWidth * (centeredPositionRef.current.imageHeight / centeredPositionRef.current.imageWidth)
+            } else {
+              // Desktop layout
+              finalImageTop = 200
+              finalImageLeft = 100
+              finalImageWidth = Math.min(window.innerWidth * 0.26, 500)
+              finalImageHeight =
+                finalImageWidth * (centeredPositionRef.current.imageHeight / centeredPositionRef.current.imageWidth)
+            }
+
+            const cloneHeight = isSmallScreen ? "100vh" : "80vh"
+
+            // Animate other cards with staggered effect
+            const slideTl = gsap.timeline()
+
+            CardRef.current.forEach((otherCard, i) => {
+              if (i !== index) {
+                const direction = i < index ? -1 : 1
+                const distance = Math.abs(i - index)
+                const staggerDelay = distance * 0.05
+
+                slideTl.to(
+                  otherCard,
+                  {
+                    x: `${direction * (window.innerWidth * 0.5)}px`,
+                    opacity: 0,
+                    duration: 0.8,
+                    ease: "power3.out",
+                    delay: staggerDelay,
+                  },
+                  0,
+                )
+              }
+            })
+
+            // First expand just the card container
+            slideTl.to(
+              cardClone,
+              {
+                top: -10,
+                left: 0,
+                width: "100vw",
+                height: cloneHeight,
+                borderRadius: 0,
+                duration: 1.2,
+                ease: "power2.inOut",
+                delay: 0.3,
+              },
+              0,
+            )
+
+            // Simultaneously animate the image to its final position
+            slideTl.to(
+              imageClone,
+              {
+                top: finalImageTop,
+                left: finalImageLeft,
+                width: finalImageWidth,
+                height: finalImageHeight,
+                position: "absolute",
+                duration: 1.2,
+                ease: "power2.inOut",
+                delay: 0.3,
+                onComplete: () => {
+                  // Create and append content once animations are complete
+                  const contentDiv = document.createElement("div")
+
+                  if (isSmallScreen) {
+                    contentDiv.className =
+                      "absolute inset-0 bg-gradient-to-br from-gray-900/95 to-black/95 p-4 opacity-0"
+                  } else {
+                    contentDiv.className =
+                      "absolute inset-0 bg-gradient-to-br from-[#13011c]/90  to-black p-12 opacity-0"
+                  }
+
+                  contentDiv.style.overflowY = "hidden"
+                  contentDiv.style.overflowX = "hidden"
+
+                  // Store reference to content container
+                  contentContainerRef.current = contentDiv
+
+                  let contentHTML
+
+                  if (isSmallScreen) {
+                    // Mobile layout - image at top, content below
+                    contentHTML = `<div class="expanded-content-wrapper relative"
+                style="margin-top: ${finalImageTop + finalImageHeight + 20}px;">
+                <div class="flex justify-between items-center">
+                 <div> <span class="inline-block text-sm py-1 px-3 mb-2 bg-white/10 text-white rounded-full backdrop-blur-sm">${project.category}</span>
+                  <h1 class="text-3xl font-bold mb-3 text-white">${project.des}</h1>
+                  </div>
+                  <button id="close-btn" class="text-sm  py-1 max-h-10 px-1  bg-white text-black rounded-lg font-medium hover:bg-opacity-90 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95">
+                  Close Project
+                </button>
+                </div>
+                </div>
+                <div class="content-section w-full text-white mt-4">
+                  <p class="text-lg mb-4 text-white/90">Detailed description for ${project.des}. This premium showcase highlights the key features and unique aspects of this project.</p>
+                  <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="bg-white/5 p-3 rounded-lg backdrop-blur-sm">
+                      <h3 class="text-white text-lg font-semibold mb-1">Client</h3>
+                      <p class="text-white/80">Premium Client</p>
+                    </div>
+                    <div class="bg-white/5 p-3 rounded-lg backdrop-blur-sm">
+                      <h3 class="text-white text-lg font-semibold mb-1">Timeline</h3>
+                      <p class="text-white/80">2024</p>
+                    </div>
+                    <div class="bg-white/5 p-3 rounded-lg backdrop-blur-sm">
+                      <h3 class="text-white text-lg font-semibold mb-1">Category</h3>
+                      <p class="text-white/80">${project.category}</p>
+                    </div>
+                    <div class="bg-white/5 p-3 rounded-lg backdrop-blur-sm">
+                      <h3 class="text-white text-lg font-semibold mb-1">Team</h3>
+                      <p class="text-white/80">Design & Development</p>
+                    </div>
+                  </div>
+                  <p class="text-lg mb-4 text-white/90">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique. 
+                    Duis cursus, mi quis viverra ornare, eros dolor interdum nulla, ut commodo diam libero vitae erat.
+                  </p>
+                  <p class="text-lg mb-4 text-white/90">
+                    Aenean faucibus nibh et justo cursus id rutrum lorem imperdiet. Nunc ut sem vitae risus tristique posuere.
+                    Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae.
+                  </p>
+                </div>
+                <button id="close-btn" class="text-sm mt-4 px-4 py-2.5 bg-white text-black rounded-full font-medium hover:bg-opacity-90 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95">
+                  Close Project
+                </button>
+              </div>
+            `
+                  } else {
+                    // Add HTML content with spacing for the image
+                    contentHTML = `
+                  <div class="expanded-content-wrapper relative min-w-5xl px-12 flex max-sm:flex-col gap-8 mb-8">
+                    <div class="relative image-section">
+                      <span class="inline-block px-4 py-1.5 text-sm bg-white/10 text-white rounded-full mb-4 backdrop-blur-sm">${project.category}</span>
+                      <h1 class="text-5xl font-bold mb-6 text-white">${project.des}</h1>
+                      
+                      <!-- Transparent placeholder div that matches image dimensions -->
+                      <div class="image-placeholder" style="width:${finalImageWidth}px; height:${finalImageHeight}px; top:${finalImageTop}px; left:${finalImageLeft}px top:${finalImageTop}px;"></div>
+                      <button id="close-btn" class="text-xl mt-25 px-6 py-3 max-lg:mt-10 max-lg:text-sm bg-white text-black rounded-full font-medium hover:bg-opacity-90 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95">
+                        Close Project
+                      </button>
+                    </div>
+                    <div class="content-section w-full text-white mt-[8rem] max-lg:mt-[2rem]">
+                      <p class="text-lg mb-6 text-white/90">Detailed description for ${project.des}. This premium showcase highlights the key features and unique aspects of this project.</p>
+                      <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-white/5 p-4 rounded-lg backdrop-blur-sm">
+                          <h3 class="text-white text-lg font-semibold mb-2">Client</h3>
+                          <p class="text-white/80">Premium Client</p>
+                        </div>
+                        <div class="bg-white/5 p-4 rounded-lg backdrop-blur-sm">
+                          <h3 class="text-white text-lg font-semibold mb-2">Timeline</h3>
+                          <p class="text-white/80">2024</p>
+                        </div>
+                        <div class="bg-white/5 p-4 rounded-lg backdrop-blur-sm">
+                          <h3 class="text-white text-lg font-semibold mb-2">Category</h3>
+                          <p class="text-white/80">${project.category}</p>
+                        </div>
+                        <div class="bg-white/5 p-4 rounded-lg backdrop-blur-sm">
+                          <h3 class="text-white text-lg font-semibold mb-2">Team</h3>
+                          <p class="text-white/80">Design & Development</p>
+                        </div>
+                      </div>
+                      <p class="text-lg mb-6 text-white/90">
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique. 
+                        Duis cursus, mi quis viverra ornare, eros dolor interdum nulla, ut commodo diam libero vitae erat.
+                      </p>
+                      <p class="text-lg mb-6 text-white/90">
+                        Aenean faucibus nibh et justo cursus id rutrum lorem imperdiet. Nunc ut sem vitae risus tristique posuere.
+                        Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae.
+                      </p>
+                    </div>
+                  </div>
+                `
+                  }
+                  contentDiv.innerHTML = contentHTML
+
+                  // Put the content behind the image in z-index
+                  contentDiv.style.zIndex = "49"
+                  cardClone.appendChild(contentDiv)
+
+                  // Fade in content
+                  gsap.to(contentDiv, {
+                    opacity: 1,
+                    duration: 0.5,
+                    delay: 0.2,
+                  })
+
+                  document.getElementById("close-btn").addEventListener("click", handleClose)
+                },
+              },
+              0,
+            )
+          },
+        })
+      }
+    },
+    [expanded, extendedProjects.length],
+  )
+
+  // Memoized close handler
+  const handleClose = useCallback(() => {
+    const container = containerRef.current
+    const cardClone = expandedCardRef.current
+    const imageClone = imageCloneRef.current
+    const storedPosition = centeredPositionRef.current
+    const contentDiv = contentContainerRef.current
+
+    if (cardClone && imageClone && storedPosition) {
       const tl = gsap.timeline({
         onComplete: () => {
-          // Remove the clone and reset states after the animation
-          if (clone.parentNode) {
-            container.removeChild(clone);
+          if (cardClone.parentNode) {
+            container.removeChild(cardClone)
           }
-          setScrollEnabled(true);
-          setExpanded(false);
-          setExpandedContent(null);
-          centeredPositionRef.current = null;
+          setScrollEnabled(true)
+          setExpanded(false)
+          setExpandedContent(null)
+          centeredPositionRef.current = null
+          contentContainerRef.current = null
         },
-      });
-  
-      // Step 1: Fade out the expanded content
-      const contentDiv = clone.querySelector('div');
+      })
+
+      // Fade out content
       if (contentDiv) {
         tl.to(contentDiv, {
           opacity: 0,
           duration: 0.3,
           onComplete: () => {
             if (contentDiv.parentNode) {
-              clone.removeChild(contentDiv);
+              // Remove scroll listener before removing content
+              contentDiv.removeEventListener("scroll", () => {})
+              cardClone.removeChild(contentDiv)
             }
           },
-        });
+        })
       }
-  
-      // Step 2: Shrink the clone back to the original CENTERED position
+
+      // Reset image to absolute positioning
+      imageClone.style.position = "absolute"
+
+      // Animate image back to original position
       tl.to(
-        clone,
+        imageClone,
         {
-          // Use the stored centered position from when the card was expanded
+          top: storedPosition.imageTop - storedPosition.top,
+          left: storedPosition.imageLeft - storedPosition.left,
+          width: storedPosition.imageWidth,
+          height: storedPosition.imageHeight,
+          duration: 1.0,
+          ease: "power2.inOut",
+        },
+        0,
+      )
+
+      // Shrink card container back to original position
+      tl.to(
+        cardClone,
+        {
           top: `${storedPosition.top}px`,
           left: `${storedPosition.left}px`,
           width: `${storedPosition.width}px`,
           height: `${storedPosition.height}px`,
-          borderRadius: "0px",
-          scale: 1, // Reset scale
+          borderRadius: "12px",
           duration: 1.0,
           ease: "power2.inOut",
         },
-        0 // Start at the same time as other animations
-      );
-  
-      // Step 3: Reset other cards to their original positions and opacity
+        0,
+      )
+
+      // Reset other cards
       CardRef.current.forEach((otherCard) => {
         if (otherCard) {
           tl.to(
@@ -311,16 +616,28 @@ const Show = () => {
               duration: 1.0,
               ease: "power2.out",
             },
-            0 // Start at the same time as the clone shrinking
-          );
+            0,
+          )
         }
-      });
+      })
     }
-  };
+  }, [])
+
+  // Memoized card hover handler
+  const handleCardHover = useCallback((index, isEntering) => {
+    // Set the currently hovered card index or null if leaving
+    setActiveHover(isEntering ? index : null)
+  }, [])
+
+  // Memoized ref callback to store card references
+  const setCardRef = useCallback((element, index) => {
+    CardRef.current[index] = element
+  }, [])
+
   return (
     <>
-    <style>
-      {`
+      <style>
+        {`
         .hide-scrollbar {
           -ms-overflow-style: none;
           scrollbar-width: none;
@@ -328,84 +645,190 @@ const Show = () => {
         .hide-scrollbar::-webkit-scrollbar {
           display: none;
         }
+        .reflect-below {
+          -webkit-box-reflect: below 10px linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.15) 85%);
+        }
+        .gallery-heading {
+          color: white;
+          text-shadow: 0px 2px 8px rgba(0,0,0,0.3);
+          letter-spacing: -0.5px;
+        }
+        .card-container {
+          transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                      box-shadow 0.5s ease,
+                      filter 0.5s ease;
+        }
+        .card-container:hover {
+          transform: translateY(-10px) scale(1.03);
+          box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+          filter: brightness(1.1);
+        }
+        .scroll-indicator {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 48px;
+          height: 48px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          background-color: rgba(255, 255, 255, 0.15);
+          backdrop-filter: blur(8px);
+          cursor: pointer;
+          opacity: 0;
+          transition: all 0.3s ease;
+          z-index: 20;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .gallery-container:hover .scroll-indicator {
+          opacity: 1;
+        }
+        .scroll-indicator:hover {
+          background-color: rgba(255, 255, 255, 0.25);
+          transform: translateY(-50%) scale(1.1);
+        }
+        .scroll-indicator.left {
+          left: 20px;
+        }
+        .scroll-indicator.right {
+          right: 20px;
+        }
+        .backdrop {
+          position: fixed;
+          inset: 0;
+          background: linear-gradient(135deg, rgba(20, 20, 20, 0.96), rgba(10, 10, 10, 0.98));
+          backdrop-filter: blur(5px);
+          z-index: 40;
+        }
+        .card-image {
+          transition: transform 0.5s ease;
+        }
+        .card-container:hover .card-image {
+          transform: scale(1.05);
+        }
+        .card-overlay {
+          background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 30%, rgba(0,0,0,0) 60%);
+          transition: opacity 0.3s ease;
+        }
+        .card-container:hover .card-overlay {
+          opacity: 0.7;
+        }
+        .card-content {
+          transform: translateY(5px);
+          transition: transform 0.3s ease, opacity 0.3s ease;
+          opacity: 0.9;
+        }
+        .card-container:hover .card-content {
+          transform: translateY(0);
+          opacity: 1;
+        }
+        .category-badge {
+          background: rgba(255,255,255,0.15);
+          backdrop-filter: blur(4px);
+          border: 1px solid rgba(255,255,255,0.1);
+          transition: all 0.3s ease;
+        }
+        .card-container:hover .category-badge {
+          background: rgba(255,255,255,0.25);
+        }
       `}
-    </style>
-    <div className='h-auto w-auto relative top-[35vh]'>
-      <div className='w-[100%]  relative text-center font-Theatre'>
-        <h1 className='text-5xl '>Projects Showcase</h1>
-      </div>
-      
-      <div
-        ref={containerRef}
-        className="h-[60vh] w-[84vw] mt-[7%] ml-[9%] relative  overflow-hidden"
-        style={{ clipPath: 'url(#custom-clip)' }}
-      >
+      </style>
+      <div className="w-full max-h-screen flex flex-col items-center justify-center pt-20">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="w-full max-w-7xl text-center mb-16"
+        >
+          <h1 className="text-6xl font-bold gallery-heading relative max-lg:text-5xl max-sm:text-4xl">
+            <span className="relative inline-block">
+              Premium Projects
+              <span className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-gray-400 to-gray-600 rounded-full"></span>
+            </span>
+          </h1>
+          <p className="text-white/80 text-xl mt-8 max-w-2xl mx-auto font-light">
+            Explore our showcase of innovative design and development work
+          </p>
+        </motion.div>
+
         <div
-          ref={slideRef}
-          className={`h-full w-full flex gap-3 hide-scrollbar ${
-            scrollEnabled ? "scroll-smooth" : ""
-          }`}
+          ref={containerRef}
+          className="gallery-container h-[38vh] w-full relative mt-10 reflect-below max-lg:h-[40vh] max-sm:h-[30vh]"
           style={{
-            overflowX: scrollEnabled ? 'scroll' : 'hidden'
+            perspective: "2000px",
+            perspectiveOrigin: "center center",
           }}
         >
-          {extendedProjects.map((project, index) => (
-            <div 
-              ref={(el) => (CardRef.current[index] = el)}
-              key={index} 
-              onClick={() => handleCardClick(index, project)}
-              className={`h-full w-[13vw] flex-shrink-0 relative flex items-center justify-center text-black
-                ${index === CurrentIndex ? "bg-white" : "bg-white"}
-                transition-transform duration-300 cursor-pointer
-              `}
-              style={{ transformOrigin: 'center center' }}
-            >
-              {/* Fixed: Changed project.img to project.image */}
-              <img 
-                src={project.image} 
-                alt={project.des}
-                className='w-full h-full object-cover' 
-              />
-              <div className="absolute w-35 h-22  top-1/2 left-0 z-[999]  leading-[30px] text-white  " >
-              <h1 className='leading-[28px]'>{project.des}</h1>
-              
-               </div>
-            </div>
-          ))}
-        </div>
-        
-        {!expanded && (
-          <>
-            <div 
-              className='h-full w-[2vw] absolute top-0 left-0 z-10'
-              onMouseEnter={() => setHoverSide(-1)}
-              onMouseLeave={() => setHoverSide(0)}
-            ></div>
-            <div 
-              className='h-full w-[2vw] absolute top-0 right-0 z-10'
-              onMouseEnter={() => setHoverSide(1)}
-              onMouseLeave={() => setHoverSide(0)}
-            ></div>
-          </>
-        )}
-      </div>
+          {!expanded && (
+            <>
+              <div
+                className="scroll-indicator left"
+                onMouseEnter={() => setHoverSide(-1)}
+                onMouseLeave={() => setHoverSide(0)}
+              >
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+              </div>
+              <div
+                className="scroll-indicator right"
+                onMouseEnter={() => setHoverSide(1)}
+                onMouseLeave={() => setHoverSide(0)}
+              >
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </div>
+            </>
+          )}
 
-      <svg width="0" height="0">
-        <defs>
-          <clipPath id="custom-clip" clipPathUnits="objectBoundingBox">
-            <path d="
-              M 0,0 
-              C 0.25,0.15, 0.75,0.15, 1,0 
-              L 1,1 
-              C 0.75,0.85, 0.25,0.85, 0,1 
-              Z
-            " />
-          </clipPath>
-        </defs>
-      </svg>
-    </div>
+          <div
+            ref={slideRef}
+            className={`h-full w-full flex gap-8 hide-scrollbar ${scrollEnabled ? "scroll-smooth" : ""}`}
+            style={{
+              overflowX: scrollEnabled ? "scroll" : "hidden",
+              transform: "rotateX(-5deg)",
+              transformStyle: "preserve-3d",
+              willChange: "transform",
+              transformOrigin: "center center",
+            }}
+          >
+            {extendedProjects.map((project, index) => (
+              <ProjectCard
+                key={index}
+                project={project}
+                index={index}
+                currentIndex={CurrentIndex}
+                activeHover={activeHover}
+                onCardClick={handleCardClick}
+                onCardHover={handleCardHover}
+                cardRef={setCardRef}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
     </>
   )
 }
 
-export default Show;
+export default memo(PremiumGallery)

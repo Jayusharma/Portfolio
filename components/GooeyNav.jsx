@@ -1,21 +1,22 @@
 "use client"
 import Link from "next/link";
 import { useRef, useEffect, useState } from "react";
-
+import { gsap } from "gsap";
 const GooeyNav = ({
   items=[{
     label: "Home",
     href: "/",
   },{
     label: "About",
-    href: "/About",
+    href: "#about",
   },{
     label: "Projects",
-    href: "/Projects",
+    href: "#projects",
   },{
     label: "Contact",
-    href: "/Contact",
+    href: "#Contact",
   },],
+  containNavOnly = false,
   
    
   animationTime = 400,
@@ -37,6 +38,25 @@ const GooeyNav = ({
       ((360 + noise(8)) / totalPoints) * pointIndex * (Math.PI / 180);
     return [distance * Math.cos(angle), distance * Math.sin(angle)];
   };
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    
+    // Initial state - move navbar above viewport
+    gsap.set(containerRef.current, { 
+      y: -100, 
+      opacity: 0 
+    });
+    
+    // Animate navbar down
+    gsap.to(containerRef.current, {
+      y: 0,
+      opacity: 1,
+      duration: 0.8,
+      ease: "power3.out",
+      delay: 0.2
+    });
+  }, []);
   const createParticle = (i, t, d, r) => {
     let rotate = noise(r / 10);
     return {
@@ -53,6 +73,8 @@ const GooeyNav = ({
     const r = particleR;
     const bubbleTime = animationTime * 2 + timeVariance;
     element.style.setProperty("--time", `${bubbleTime}ms`);
+    element.classList.add("showing-background");
+    
     for (let i = 0; i < particleCount; i++) {
       const t = animationTime * 2 + noise(timeVariance * 2);
       const p = createParticle(i, t, d, r);
@@ -84,6 +106,16 @@ const GooeyNav = ({
         }, t);
       }, 30);
     }
+   
+      
+     
+    // Remove the background after the longest animation completes
+    const longestAnimationTime = animationTime * 2 + timeVariance + 100; // Add a small buffer
+    setTimeout(() => {
+      if (element) {
+        element.classList.remove("showing-background");
+      }
+    }, longestAnimationTime);
   };
   const updateEffectPosition = (element) => {
     if (!containerRef.current || !filterRef.current || !textRef.current) return;
@@ -176,13 +208,18 @@ const GooeyNav = ({
             position: absolute;
             inset: -75px;
             z-index: -2;
+            background: transparent;
+            transition: background 0.3s ease;
+            pointer-events: none;
+          }
+          .effect.filter.showing-background::before {
             background: black;
           }
           .effect.filter::after {
             content: "";
             position: absolute;
             inset: 0;
-            background: white;
+            background: none;
             transform: scale(0);
             opacity: 0;
             z-index: -1;
@@ -285,15 +322,19 @@ const GooeyNav = ({
           }
         `}
       </style>
-      <div className="relative font-chakra  tracking-[1.5px]" ref={containerRef}>
+      <div 
+        className={`${containNavOnly ? 'absolute' : 'fixed'} top-0 left-0 ${containNavOnly ? 'w-auto h-auto' : 'w-full '} z-[999] font-chakra tracking-[1.5px] `} 
+        ref={containerRef}>
         <nav
-          className="flex absolute w-full justify-center z-50  mt-3 "
+          className="flex absolute w-full justify-between z-50 mt-3"
           style={{ transform: "translate3d(0,0,0.01px)" }}
-        >
-        
+        > 
+        <div className="size-[40px] ml-3 pointer-events-auto max-lg:size-[30px]">
+          <img src="/logo.png" alt="" />
+        </div>
           <ul
             ref={navRef}
-            className="flex gap-12 list-none p-0 px-4 m-0 relative z-[3]"
+            className="flex gap-12 list-none p-0 px-4 m-0 relative z-[3] mr-10 max-lg:mr-3 max-lg:gap-5 max-sm:mr-0 max-lg:gap-2pointer-events-auto"
             style={{
               color: "white",
               textShadow: "0 1px 1px hsl(205deg 30% 10% / 0.2)",
@@ -302,7 +343,7 @@ const GooeyNav = ({
             {items.map((item, index) => (
               <li
                 key={index}
-                className={`py-[0.6em] px-[1em] rounded-full relative  transition-[background-color_color_box-shadow] duration-300 ease shadow-[0_0_0.5px_1.5px_transparent] text-white ${
+                className={`py-[0.6em] px-[1em] rounded-full relative   duration-300 ease shadow-[0_0_0.5px_1.5px_transparent] text-white ${
                   activeIndex === index ? "active" : ""
                 }`}
                 onClick={(e) => handleClick(e, index)}
