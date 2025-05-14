@@ -59,7 +59,7 @@
   --font-strig:"strig",sans-serif;
   --font-space:"space",sans-serif;
   --font-brico:"brico",sans-serif;
-
+  --breakpoint-2xl: 1560px;
 }
 @theme inline {
   --color-background: var(--background);

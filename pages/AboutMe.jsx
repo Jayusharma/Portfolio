@@ -87,7 +87,7 @@ useEffect(() => {
          />
          </div>
          
-          <p className='mt-[2vh] font-chakra text-lg  max-md:mt-[5vh] max-md:w-screen max-sm:w-[98vw] max-sm:text-[1.1rem] '>
+          <p className='mt-[2vh] font-chakra text-lg   max-md:mt-[5vh] max-md:w-screen max-sm:w-[98vw] max-sm:text-[1.1rem] '>
             I build interfaces that actually feel good to use. I'm a frontend developer who cares 
             about the little things — the flow, the feel, the way something moves when you click it. 
             Right now, I'm deep into building 3D experiences and learning how to make the web more alive. 
