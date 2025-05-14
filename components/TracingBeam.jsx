@@ -227,7 +227,7 @@ export default function TracingBeamSkills() {
   }, [])
 
   return (
-    <div className="relative mx-auto min-h-[90vh] max-w-5xl px-4 py-10 max-sm:px-1 max-2xl:min-h-[110vh] " ref={containerRef}>
+    <div className="relative mx-auto min-h-[90vh] max-w-5xl px-4 py-10 max-sm:px-1 max-2xl:min-h-[110vh] max-lg:min-h-[90vh] " ref={containerRef}>
       {/* Static beam background */}
       <div className="absolute left-1/2 top-10 bottom-10 -ml-px w-[1px] max-sm:left-[10vw] bg-gradient-to-b from-transparent via-slate-300 to-transparent" />
 
