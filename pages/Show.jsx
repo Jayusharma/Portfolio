@@ -9,32 +9,37 @@ gsap.registerPlugin(ScrollToPlugin)
 
 // Memoized Project Card Component
 const ProjectCard = memo(({ project, index, currentIndex, activeHover, onCardClick, onCardHover, cardRef }) => {
-  // Lazy loading implementation with react-intersection-observer
+  const [isLargeScreen, setIsLargeScreen] = useState(false)
+
+  useEffect(() => {
+    // Run this only in the browser
+    const mediaQuery = window.matchMedia("(min-width: 640px)")
+    const updateScreenSize = () => setIsLargeScreen(mediaQuery.matches)
+
+    updateScreenSize() // set initially
+    mediaQuery.addEventListener("change", updateScreenSize) // listen for screen changes
+
+    return () => mediaQuery.removeEventListener("change", updateScreenSize)
+  }, [])
+
   const { ref: inViewRef, inView } = useInView({
     triggerOnce: true,
     threshold: 0.1,
     rootMargin: "200px",
   })
 
-  // Combine refs (intersection observer ref and the card ref from parent)
   const setRefs = useCallback(
     (node) => {
-      // Save to the ref from parent component
       cardRef(node, index)
-      // Save to the inView ref
       inViewRef(node)
     },
     [cardRef, index, inViewRef],
   )
 
-  // Calculate how far the card is from the current center
   const isActive = activeHover === index
   const [imageLoaded, setImageLoaded] = useState(false)
 
-  // Handle image load event
-  const handleImageLoad = () => {
-    setImageLoaded(true)
-  }
+  const handleImageLoad = () => setImageLoaded(true)
 
   return (
     <div
@@ -53,19 +58,15 @@ const ProjectCard = memo(({ project, index, currentIndex, activeHover, onCardCli
         border: isActive ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(255,255,255,0.05)",
       }}
     >
-      <div
-        className="card-overlay absolute inset-0 opacity-40 transition-opacity duration-300"
-        style={{ opacity: isActive ? 0.3 : 0.5 }}
-      />
+      <div className="card-overlay absolute inset-0 opacity-40 transition-opacity duration-300"
+           style={{ opacity: isActive ? 0.3 : 0.5 }} />
 
-      {/* Placeholder shown while image is loading */}
       {!imageLoaded && (
         <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
           <div className="w-8 h-8 border-4 border-gray-600 border-t-white rounded-full animate-spin"></div>
         </div>
       )}
 
-      {/* Only load image when in viewport or nearby (lazy loading) */}
       {inView && (
         <img
           src={project.image || "/placeholder.svg"}
@@ -77,35 +78,35 @@ const ProjectCard = memo(({ project, index, currentIndex, activeHover, onCardCli
       )}
 
       <div className="card-content absolute bottom-0 left-0 w-full p-5 z-10 max-sm:p-1">
-        <span className="category-badge text-sm max-sm:text-xs text-white opacity-90 mb-2 inline-block py-1 px-3 rounded-full">
+        <span className="category-badge text-sm max-sm:text-xs text-white opacity-90 mb-2 max-sm:mb-0 inline-block py-1 px-3 rounded-full">
           {project.category}
         </span>
-        <h2 className="text-2xl max-sm:text-lg pl-2 font-semibold text-white">{project.des}</h2>
+        <h2 className="text-2xl max-sm:text-lg pl-2 mb-0 max-sm:mb-2 font-semibold text-white">{project.des}</h2>
 
-        <div
-          className={`mt-3 flex items-center transition-opacity duration-300 ${isActive ? "opacity-100" : "opacity-0"}`}
-        >
-          <span className="text-white/80 text-sm">View Project</span>
-          <svg
-            className="w-4 h-4 ml-2 text-white"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M5 12h14"></path>
-            <path d="M12 5l7 7-7 7"></path>
-          </svg>
-        </div>
+        {isLargeScreen && (
+          <div className={`mt-3 flex items-center transition-opacity duration-300 ${isActive ? "opacity-100" : "opacity-0"}`}>
+            <span className="text-white/80 text-sm">View Project</span>
+            <svg
+              className="w-4 h-4 ml-2 text-white"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M5 12h14" />
+              <path d="M12 5l7 7-7 7" />
+            </svg>
+          </div>
+        )}
       </div>
     </div>
   )
 })
 
-// Ensure displayName is set for React DevTools
 ProjectCard.displayName = "ProjectCard"
+
 
 const projects = [
   {
