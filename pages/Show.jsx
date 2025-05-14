@@ -476,7 +476,7 @@ const PremiumGallery = () => {
                       
                       <!-- Transparent placeholder div that matches image dimensions -->
                       <div class="image-placeholder" style="width:${finalImageWidth}px; height:${finalImageHeight}px; top:${finalImageTop}px; left:${finalImageLeft}px top:${finalImageTop}px;"></div>
-                      <button id="close-btn" class="text-xl mt-25 px-6 py-3 max-lg:mt-10 max-lg:text-sm bg-white text-black rounded-full font-medium hover:bg-opacity-90 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95">
+                      <button id="close-btn" class="text-xl mt-18 px-6 py-3 max-lg:mt-10 max-lg:text-sm bg-white text-black  rounded-full font-medium hover:bg-opacity-90 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95">
                         Close Project
                       </button>
                     </div>
