@@ -1,5 +1,5 @@
 @import "tailwindcss";
-
+@tailwind utilities;
 :root {
   --background: #363432;
   --foreground: #fffefe;
@@ -126,6 +126,9 @@ body {
   mix-blend-mode: difference;
   
 }
+.translate-y50 {
+    transform: translateY(-50%);
+  }
 }
 @keyframes slideY {
   0% {

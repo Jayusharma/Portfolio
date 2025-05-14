@@ -743,7 +743,7 @@ const PremiumGallery = () => {
         >
           <h1 className="text-6xl font-bold gallery-heading relative max-lg:text-5xl max-sm:text-4xl">
             <span className="relative inline-block">
-              Premium Projects
+             Projects Showcase
               <span className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-gray-400 to-gray-600 rounded-full"></span>
             </span>
           </h1>

@@ -58,9 +58,9 @@ const Hero = () => {
         className='h-full w-full object-cover absolute -z-10 pointer-events-none'
         loading="eager"
       />
-      <div ref={overlayRef} className='col-start-2 max-sm:col-start-1 z-10 pt-[22vh] pl-[10vw] max-lg:pl-[6vw]'>
-        <div className="pl-6 thin-border pb-20 z-10 max-w-[35vw] max-lg:max-w-[40vw] max-lg:pl-4 max-lg:pb-10 max-sm:min-w-[70vw]">
-          <div className="mt-20">
+      <div ref={overlayRef} className='col-start-2 max-sm:col-start-1 z-10 pt-[22vh] pl-[10vw] max-lg:pl-[6vw] max-sm:pt-[18vh]'>
+        <div className="pl-6 thin-border pb-20 z-10 max-w-[35vw] max-lg:max-w-[40vw] max-lg:pl-4 max-lg:pb-10 max-sm:min-w-[80vw]">
+          <div className="mt-20 max-sm:mt-10">
             <SplitText text='Frontend' className="text-7xl text-white font-strig max-2xl:text-6xl max-xl:text-5xl max-lg:text-4xl" />
           </div>
           <SplitText text='Developer' className="text-5xl text-white font-strig max-2xl:text-4xl max-lg:text-3xl" />

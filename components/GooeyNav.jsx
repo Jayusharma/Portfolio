@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useRef, useEffect, useState } from "react";
 import { gsap } from "gsap";
+
 const GooeyNav = ({
   items=[{
     label: "Home",
@@ -17,8 +18,6 @@ const GooeyNav = ({
     href: "#Contact",
   },],
   containNavOnly = false,
-  
-   
   animationTime = 400,
   particleCount = 15,
   particleDistances = [90, 10],
@@ -32,7 +31,9 @@ const GooeyNav = ({
   const filterRef = useRef(null);
   const textRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(initialActiveIndex);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const noise = (n = 1) => n / 2 - Math.random() * n;
+  
   const getXY = (distance, pointIndex, totalPoints) => {
     const angle =
       ((360 + noise(8)) / totalPoints) * pointIndex * (Math.PI / 180);
@@ -57,6 +58,7 @@ const GooeyNav = ({
       delay: 0.2
     });
   }, []);
+
   const createParticle = (i, t, d, r) => {
     let rotate = noise(r / 10);
     return {
@@ -68,6 +70,7 @@ const GooeyNav = ({
       rotate: rotate > 0 ? (rotate + r / 20) * 10 : (rotate - r / 20) * 10,
     };
   };
+
   const makeParticles = (element) => {
     const d = particleDistances;
     const r = particleR;
@@ -106,9 +109,7 @@ const GooeyNav = ({
         }, t);
       }, 30);
     }
-   
-      
-     
+    
     // Remove the background after the longest animation completes
     const longestAnimationTime = animationTime * 2 + timeVariance + 100; // Add a small buffer
     setTimeout(() => {
@@ -117,6 +118,7 @@ const GooeyNav = ({
       }
     }, longestAnimationTime);
   };
+
   const updateEffectPosition = (element) => {
     if (!containerRef.current || !filterRef.current || !textRef.current) return;
     const containerRect = containerRef.current.getBoundingClientRect();
@@ -131,6 +133,7 @@ const GooeyNav = ({
     Object.assign(textRef.current.style, styles);
     textRef.current.innerText = element.innerText;
   };
+
   const handleClick = (e, index) => {
     const liEl = e.currentTarget;
     if (activeIndex === index) return;
@@ -148,7 +151,10 @@ const GooeyNav = ({
     if (filterRef.current) {
       makeParticles(filterRef.current);
     }
+    // Close mobile menu after click
+    setMobileMenuOpen(false);
   };
+
   const handleKeyDown = (e, index) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -158,23 +164,66 @@ const GooeyNav = ({
       }
     }
   };
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
   useEffect(() => {
     if (!navRef.current || !containerRef.current) return;
+    
+    // Only apply gooey effects on desktop
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      // Hide effect elements on mobile
+      if (filterRef.current) filterRef.current.style.display = 'none';
+      if (textRef.current) textRef.current.style.display = 'none';
+      return;
+    } else {
+      // Show effect elements on desktop
+      if (filterRef.current) filterRef.current.style.display = 'grid';
+      if (textRef.current) textRef.current.style.display = 'grid';
+    }
+    
     const activeLi = navRef.current.querySelectorAll("li")[activeIndex];
     if (activeLi) {
       updateEffectPosition(activeLi);
       textRef.current?.classList.add("active");
     }
+    
     const resizeObserver = new ResizeObserver(() => {
-      const currentActiveLi =
-        navRef.current?.querySelectorAll("li")[activeIndex];
-      if (currentActiveLi) {
-        updateEffectPosition(currentActiveLi);
+      const isMobileNow = window.innerWidth < 768;
+      
+      // Toggle visibility based on screen size
+      if (isMobileNow) {
+        if (filterRef.current) filterRef.current.style.display = 'none';
+        if (textRef.current) textRef.current.style.display = 'none';
+      } else {
+        if (filterRef.current) filterRef.current.style.display = 'grid';
+        if (textRef.current) textRef.current.style.display = 'grid';
+        
+        const currentActiveLi = navRef.current?.querySelectorAll("li")[activeIndex];
+        if (currentActiveLi) {
+          updateEffectPosition(currentActiveLi);
+        }
       }
     });
+    
     resizeObserver.observe(containerRef.current);
     return () => resizeObserver.disconnect();
   }, [activeIndex]);
+
+  // Close mobile menu when resizing to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768 && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [mobileMenuOpen]);
 
   return (
     <>
@@ -320,6 +369,74 @@ const GooeyNav = ({
             transition: all 0.3s ease;
             z-index: -1;
           }
+          
+          /* Mobile menu styles */
+          .hamburger {
+            width: 24px;
+            height: 18px;
+            position: relative;
+            cursor: pointer;
+            display: none;
+          }
+          
+          @media (max-width: 767px) {
+            .hamburger {
+              display: flex;
+              flex-direction: column;
+              justify-content: space-between;
+            }
+            
+            .desktop-menu {
+              display: none;
+            }
+          }
+          
+          @media (min-width: 768px) {
+            .mobile-menu {
+              display: none !important;
+            }
+          }
+          
+          .hamburger span {
+            display: block;
+            width: 100%;
+            height: 2px;
+            background-color: white;
+            transition: all 0.3s ease;
+          }
+          
+          .hamburger.open span:nth-child(1) {
+            transform: translateY(8px) rotate(45deg);
+          }
+          
+          .hamburger.open span:nth-child(2) {
+            opacity: 0;
+          }
+          
+          .hamburger.open span:nth-child(3) {
+            transform: translateY(-8px) rotate(-45deg);
+          }
+          
+          .mobile-menu {
+            position: absolute;
+            top: 50px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.85);
+            border-radius: 6px;
+            padding: 0.5rem;
+            z-index: 50;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+            min-width: 120px;
+            display: flex;
+            flex-direction: column;
+          }
+          
+          .mobile-menu li {
+            margin: 5px 0;
+            width: 100%;
+            text-align: center;
+            padding: 6px 10px;
+          }
         `}
       </style>
       <div 
@@ -329,12 +446,14 @@ const GooeyNav = ({
           className="flex absolute w-full justify-between z-50 mt-3"
           style={{ transform: "translate3d(0,0,0.01px)" }}
         > 
-        <div className="size-[40px] ml-3 pointer-events-auto max-lg:size-[30px]">
-          <img src="/logo.png" alt="" />
-        </div>
+          <div className="size-[40px] ml-3 pointer-events-auto max-lg:size-[30px]">
+            <img src="/logo.png" alt="Logo" />
+          </div>
+          
+          {/* Desktop Menu */}
           <ul
             ref={navRef}
-            className="flex gap-12 list-none p-0 px-4 m-0 relative z-[3] mr-10 max-lg:mr-3 max-lg:gap-5 max-sm:mr-0 max-lg:gap-2pointer-events-auto"
+            className="desktop-menu flex gap-12 list-none p-0 px-4 m-0 relative z-[3] mr-10 max-lg:mr-3 max-lg:gap-5 pointer-events-auto"
             style={{
               color: "white",
               textShadow: "0 1px 1px hsl(205deg 30% 10% / 0.2)",
@@ -343,7 +462,7 @@ const GooeyNav = ({
             {items.map((item, index) => (
               <li
                 key={index}
-                className={`py-[0.6em] px-[1em] rounded-full relative   duration-300 ease shadow-[0_0_0.5px_1.5px_transparent] text-white ${
+                className={`py-[0.6em] px-[1em] rounded-full relative duration-300 ease shadow-[0_0_0.5px_1.5px_transparent] text-white ${
                   activeIndex === index ? "active" : ""
                 }`}
                 onClick={(e) => handleClick(e, index)}
@@ -358,6 +477,45 @@ const GooeyNav = ({
               </li>
             ))}
           </ul>
+          
+          {/* Mobile Menu Toggle - Fixed the duplicate className issue */}
+          <div 
+            className={`hamburger mr-5 hidden max-md:flex pointer-events-auto z-[60] ${mobileMenuOpen ? 'open' : ''}`}
+            onClick={toggleMobileMenu}
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          
+          {/* Mobile Menu Dropdown - Simplified */}
+          {mobileMenuOpen && (
+            <ul
+              className="mobile-menu list-none m-0 pointer-events-auto"
+              style={{
+                color: "white",
+                textShadow: "0 1px 1px hsl(205deg 30% 10% / 0.2)",
+              }}
+            >
+              {items.map((item, index) => (
+                <li
+                  key={index}
+                  className={`relative rounded text-white ${
+                    activeIndex === index ? "active" : ""
+                  }`}
+                  onClick={(e) => handleClick(e, index)}
+                >
+                  <Link
+                    href={item.href}
+                    onKeyDown={(e) => handleKeyDown(e, index)}
+                    className="outline-none block w-full"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </nav>
         <span className="effect filter" ref={filterRef} />
         <span className="effect text" ref={textRef} />

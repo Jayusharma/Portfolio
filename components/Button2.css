@@ -26,3 +26,9 @@
     background: linear-gradient(270deg, rgba(2, 29, 78, 0.681) 0%, rgba(31, 215, 232, 0.873) 60%);
     color: rgb(4, 4, 38);
   }
+  @media (max-width: 768px) {
+    .btn {
+      font-size: 0.5rem;
+      padding: 0.5rem 1rem;
+    }
+  }

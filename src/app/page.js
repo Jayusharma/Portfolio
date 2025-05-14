@@ -7,7 +7,7 @@ import AboutMe from '../../pages/AboutMe'
 export default function Home() {
 
   return (
-    <div>
+    <div className='w-full overflow-x-hidden min-h-screen'>
       <Hero />
       <AboutMe />
     </div>
