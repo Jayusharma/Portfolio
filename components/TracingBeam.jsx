@@ -97,7 +97,7 @@ export default function TracingBeamSkills() {
 
   // Calculate node positions for use in both nodes and skill boxes
   const nodePositions = useMemo(
-    () => skillSections.map((_, index) => `${20 + (index * 60) / (skillSections.length - 1)}%`),
+    () => skillSections.map((_, index) => `${20 + (index * 70) / (skillSections.length - 1)}%`),
     [skillSections],
   )
 
@@ -129,7 +129,7 @@ export default function TracingBeamSkills() {
       const beamHeight = containerRect.height - 20
 
       // Calculate node positions in percentage
-      const nodePosPercentages = skillSections.map((_, index) => (20 + (index * 60) / (skillSections.length - 1)) / 100)
+      const nodePosPercentages = skillSections.map((_, index) => (15 + (index * 75) / (skillSections.length - 1)) / 100)
 
       // Calculate where the beam has reached based on progress
       const beamReachedHeight = clampedProgress * beamHeight
@@ -227,13 +227,13 @@ export default function TracingBeamSkills() {
   }, [])
 
   return (
-    <div className="relative mx-auto min-h-[90vh] max-w-5xl px-4 py-10 max-sm:px-1" ref={containerRef}>
+    <div className="relative mx-auto min-h-[100vh] max-w-5xl px-4 py-10 max-sm:px-1 " ref={containerRef}>
       {/* Static beam background */}
       <div className="absolute left-1/2 top-10 bottom-10 -ml-px w-[1px] max-sm:left-[10vw] bg-gradient-to-b from-transparent via-slate-300 to-transparent" />
 
       {/* Animated beam that follows scroll with glow effect - only shows when triggered */}
       <motion.div
-        className="absolute left-1/2 top-10 bottom-30 -ml-[2px] w-[4px] max-sm:left-[10vw] bg-gradient-to-b from-purple-500 via-blue-500 to-green-500"
+        className="absolute left-1/2 top-10 bottom-20 -ml-[2px] w-[4px] max-sm:left-[10vw] bg-gradient-to-b from-purple-500 via-blue-500 to-green-500"
         style={{
           scaleY: scrollProgress,
           originY: 0,
