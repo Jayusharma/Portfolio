@@ -71,23 +71,23 @@ useEffect(() => {
       </div>
       
       <div className='flex justify-between  px-[10vw] py-[15vh] max-sm:py-[8vh] max-sm:px-[2vw]'>
-        <div ref={LeftRef} className='w-[45vw] h-auto mt-[4%] flex flex-col max-lg:mt-[8%] '>
+        <div ref={LeftRef} className='w-[45vw] h-auto mt-[4%] flex flex-col max-lg:mt-[8%]  '>
         <h1 className='text-4xl font-mont max-xl:text-3xl max-sm:text-2xl'>
         Hello, I'm{' '}
         </h1>
-        <div>
+        <div className='h-[6vh]'>
         <Typewriter  
          text="Jayditya Sharma!"
          speed={200}
          active={isActive}
          cursorStyle="block" // try "underscore" or "default"
          cursorClassName="bg-blue-500" // customize cursor color
-         className='text-4xl font-mont max-xl:text-3xl max-sm:text-2xl'
+         className='text-4xl font-mont max-xl:text-3xl max-sm:text-2xl '
          onComplete={() => setIsActive(false)}
          />
          </div>
          
-          <p className='mt-[2vh] font-chakra text-lg max-sm:mt-[5vh] max-md:mt-[5vh] max-md:w-screen max-sm:w-[98vw] max-sm:text-[1.1rem]'>
+          <p className='mt-[2vh] font-chakra text-lg  max-md:mt-[5vh] max-md:w-screen max-sm:w-[98vw] max-sm:text-[1.1rem] '>
             I build interfaces that actually feel good to use. I'm a frontend developer who cares 
             about the little things — the flow, the feel, the way something moves when you click it. 
             Right now, I'm deep into building 3D experiences and learning how to make the web more alive. 
